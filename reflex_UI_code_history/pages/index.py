@@ -13,6 +13,7 @@ import reflex as rx
 from reflex_UI_code_history.components.terminal import terminal_box, typewriter_line
 from reflex_UI_code_history.database import db_session, Efemerides
 from reflex_UI_code_history.components.footer import footer
+from reflex_UI_code_history.components.boot_sequence import boot_sequence_box
 from reflex_UI_code_history.styles.index_css import (
     PROMPT_COLOR,
     DIM_COLOR,
@@ -69,6 +70,8 @@ def _format_date_es(today: _dt.date | None = None) -> str:
     if today is None:
         today = _dt.date.today()
     return today.strftime("%Y-%m-%d")
+
+
 
 
 def index() -> rx.Component:
@@ -132,6 +135,14 @@ def index() -> rx.Component:
             margin_top="20px",
             margin_bottom="20px",
         ),
+        # Componente de arranque (boot) inmediatamente después del header
+        rx.center(
+            boot_sequence_box(),
+            z_index=1,
+            width="100%",
+        ),
+        # Separador tipo <hr> verde
+        rx.box(height="2px", bg=PROMPT_COLOR, opacity=0.6, width=["92%", "700px"], margin_y="12px", border_radius="2px"),
         # Blob verde principal (marca)
         rx.box(
             **GREEN_BLOB_STYLE,
