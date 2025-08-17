@@ -6,4 +6,6 @@ requires-python = ">=3.12"
 dependencies = [
     "reflex>=0.8.6",
     "sqlalchemy>=2.0",
+    "pydantic-settings>=2.2",
+    "openai>=1.30",
 ]
