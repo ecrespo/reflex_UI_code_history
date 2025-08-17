@@ -109,7 +109,19 @@ Uso manual:
 python generate_tomorrow_efemeride.py
 ```
 
-Ejemplo de cron (Linux), todos los días a las 23:59 hora local:
+### Ejecución automática en segundo plano (dentro de Reflex)
+La app inicia un scheduler en segundo plano (APScheduler) al arrancar el backend de Reflex, que ejecuta diariamente la generación para el día siguiente.
+
+- Módulo: `reflex_UI_code_history/scheduler.py`
+- Inicio: se invoca `start_scheduler()` desde `reflex_UI_code_history/reflex_UI_code_history.py`.
+- Programación por defecto: todos los días a las 23:59 hora local.
+- Zona horaria: se lee de la variable `TZ` (e.g., `America/Mexico_City`).
+- Variables opcionales para ajustar el horario:
+  - `EFEMERIDE_CRON_HOUR` (por defecto `23`)
+  - `EFEMERIDE_CRON_MINUTE` (por defecto `59`)
+
+### Alternativa: cron del sistema (Linux)
+Si prefieres usar cron del sistema, todos los días a las 23:59 hora local:
 
 ```cron
 59 23 * * * /usr/bin/env bash -lc 'cd /ruta/al/proyecto && ./generate_tomorrow_efemeride.py >> cron_efemerides.log 2>&1'
@@ -147,3 +159,5 @@ Si existen tareas anteriores realizadas por Junie, por favor facilita el listado
 - ORM: SQLAlchemy
 - Gestión de configuración: pydantic-settings
 - Asistente: Junie (JetBrains)
+
+https://reflex.dev/blog/2024-10-8-self-hosting-reflex-with-docker

@@ -1,0 +1,37 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: backend
+    image: reflex-backend:latest
+    container_name: reflex_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - REFLEX_ENV=prod
+    # Optional: Load additional env vars (DB URL, API keys)
+    # env_file:
+    #   - .env
+    # restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: frontend
+    image: reflex-frontend:latest
+    container_name: reflex_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REFLEX_ENV=prod
+      # If your frontend needs to reach backend, set the backend URL (adjust key per Reflex config)
+      - BACKEND_URL=http://backend:8000
+    depends_on:
+      - backend
+    # restart: unless-stopped
+
+# Usage:
+#   docker compose build
+#   docker compose up -d
