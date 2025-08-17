@@ -11,6 +11,7 @@ import urllib.parse as _url
 import reflex as rx
 
 from reflex_UI_code_history.components.terminal import terminal_box, typewriter_line
+from reflex_UI_code_history.database import db_session, Efemerides
 from reflex_UI_code_history.components.footer import footer
 from reflex_UI_code_history.styles.index_css import (
     PROMPT_COLOR,
@@ -24,32 +25,44 @@ from reflex_UI_code_history.styles.index_css import (
 
 
 
-# Lista de efemérides (puedes ampliar libremente esta lista)
-_EFEMERIDES: list[str] = [
-    "1991: Linus Torvalds anuncia su proyecto personal que más tarde se convertirá en el kernel Linux.",
-    "2001: Se lanza Mac OS X 10.0, marcando una nueva era para el sistema operativo de Apple basado en UNIX.",
-    "1972: Se publica el lenguaje de programación C por Dennis Ritchie en los laboratorios Bell.",
-    "1995: Se libera Java 1.0 por Sun Microsystems, popularizando el lema 'Write once, run anywhere'.",
-    "2004: Se lanza Mozilla Firefox 1.0, impulsando estándares web abiertos y alternativas a IE.",
-    "1989: Tim Berners-Lee propone la World Wide Web en el CERN, sentando las bases de la web moderna.",
-    "2008: Google presenta Android, sistema operativo móvil basado en Linux y de código abierto.",
-    "2012: GitHub alcanza 2 millones de repositorios públicos, consolidando el auge del desarrollo colaborativo.",
-    "1976: Se funda Apple Computer por Steve Jobs, Steve Wozniak y Ronald Wayne.",
-    "2009: Nace Bitcoin con el bloque génesis minado por Satoshi Nakamoto, iniciando la era blockchain.",
-]
-
-
 def _fact_of_today(today: _dt.date | None = None) -> str:
-    """Obtiene la efeméride del día basándose en la fecha.
+    """Obtiene la efeméride del día desde la base de datos.
 
-    Si no existe una efeméride específica para el día, se selecciona de manera
-    determinista usando el día del año.
+    Estrategia de búsqueda:
+    1) Coincidencia exacta por display_date == hoy.
+    2) Si no hay, intentar por day y month (ignorando el año), tomando la más reciente.
+    3) Si no hay resultados, devolver un mensaje amigable.
     """
     if today is None:
         today = _dt.date.today()
-    day_of_year = int(today.strftime("%j"))  # Día del año (1-366)
-    idx = (day_of_year - 1) % len(_EFEMERIDES)
-    return _EFEMERIDES[idx]
+
+    # Consulta a la base de datos usando el ORM
+    with db_session() as session:
+        # 1) Coincidencia exacta por display_date
+        row = (
+            session.query(Efemerides)
+            .filter(Efemerides.display_date == today)
+            .order_by(Efemerides.id.desc())
+            .first()
+        )
+        if row and row.event:
+            return row.event
+
+        # 2) Fallback: por día y mes
+        row_dm = (
+            session.query(Efemerides)
+            .filter(
+                Efemerides.day == today.day,
+                Efemerides.month == today.month,
+            )
+            .order_by(Efemerides.id.desc())
+            .first()
+        )
+        if row_dm and row_dm.event:
+            return row_dm.event
+
+    # 3) Mensaje por defecto si no hay registros
+    return "No hay efeméride registrada para hoy."
 
 
 def _format_date_es(today: _dt.date | None = None) -> str:
